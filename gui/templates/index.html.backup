@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Predictive Maintenance AWS Jatiwangi</title>
+  
+  <!-- Custom fonts for this template-->
+  <link href="{{url_for('static', filename='vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet"> 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+
+  <!-- Bootstrap core JavaScript-->
+  <script src="{{url_for('static', filename='vendor/jquery/jquery.min.js')}}"></script>
+  <script src="{{url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+  <!-- Core plugin JavaScript-->
+  <script src="{{url_for('static', filename='vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="{{url_for('static', filename='js/sb-admin-2.min.js') }}"></script>
+  <!-- Custom styles for this template-->
+  <link href="{{url_for('static', filename='css/sb-admin-2.min.css" rel="stylesheet') }}">
+  <link href="{{url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+
+  <script src="{{url_for('static', filename='vendor/datatables/jquery.dataTables.min.js') }}"></script>
+  <script src="{{url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+ 
+</head>
+
+<body id="page-top">
+
+ 
+</script>
+</head>
+<body>
+     <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content">
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="text-align:center">
+            <h1 class="h3 mt-4 text-gray-800"><center>Predictive Maintenance AWS Jatiwangi</center></h1>
+          </div>
+
+          <div class="row">
+            <div class="col-xl-3 col-lg-3">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary">Lokasi Pengamatan</h6>
+                </div>
+                <div class="card-body">
+                  <div id="mapid" style="height:250px"></div>
+                </div>
+                
+              </div>
+              
+              <div class="card-body">
+                
+                <a href="history"><button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-remove-circle"></span>  Realtime Error</button> </a>
+              </div>
+            </div>
+            <div class="col-xl-9 col-lg-9">
+              <div class="row">
+                <div class="card shadow mb-4">
+                  <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Tabel Data Pengamatan</h6>
+  
+                    <button class="btn btn-primary btn-icon-split" id="tomboldownload" style="display:none">
+                      <span class="icon text-white-50">
+                        <i class="fas fa-download"></i>
+                      </span>
+                      <span class="text">Download</span>
+                    </button>
+                  </div>
+                  <div class="card-body">
+  
+                    <div class="table-responsive">
+                      <button onclick="DownloadData()">Download</button>
+                      <table class="table table-bordered" id="dataTable" width="100%" height="500px" cellspacing="0" style="overflow:auto;">
+                          <tr>
+                            <th>Waktu</th>
+                            <th>Curah Hujan</th>
+                            <th>Suhu</th>
+                            <th>Tekanan Udara</th>
+                            <th>RH</th>
+                            <th>Keterangan</th>
+                          </tr>
+                          <tbody id="dataTableContent">
+                            
+                          </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+       <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+              <div class="copyright text-center my-auto">
+                
+				
+				
+				 
+              </div>
+            </div>
+          </footer>
+      <!-- End of Footer -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+  <!-- Scroll to Top Button-->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+
+  <script>
+    function DownloadData() {
+          let staticURL = 'current_data'
+          //console.log('cek alamat', dynamicURL)
+          // AJAX request
+          $.ajax({
+            url: staticURL,
+            method: "GET",
+            dataType: "json",
+            success: function(data){
+              // Update the result div with the response
+              //$("#result").html("Data: " + JSON.stringify(data));
+              //console.log('cek data', data)
+              let time_now = new Date()
+              let time_now_utc = Date(time_now.getUTCFullYear(), time_now.getUTCMonth(),
+              time_now.getUTCDate(), time_now.getUTCHours(),
+              time_now.getUTCMinutes(), 0)
+
+              time_now_utc = new Date(time_now_utc)
+              //add lag
+              time_now_utc.setHours(time_now.getHours() - 24)
+              
+              //make sure minute only 0 10 20 30 40 50
+              time_now_utc.setMinutes(parseInt(time_now_utc.getUTCMinutes() / 10) * 10)
+
+              let last_row = data[0]
+              let last_date = new Date(last_row['tanggal'])
+              //console.log('check last date', last_date)
+
+              tanggal_hujan = []
+              for (let iter_data = 0; iter_data < data.length; iter_data++) {
+                //console.log(data[iter_data]['tanggal'])
+                single_dict = {}
+                single_dict['tanggal'] = data[iter_data]['tanggal']
+                single_dict['hujan'] = data[iter_data]['rr']
+                single_dict['tekanan'] = data[iter_data]['pp_air']
+                single_dict['suhu'] = data[iter_data]['tt_air_avg']
+                single_dict['rh'] = data[iter_data]['rh_avg']
+                tanggal_hujan.push(single_dict)
+              }
+
+              tanggal_hujan.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal))
+              //get data used
+              //console.log('cek tanggal hujan', tanggal_hujan, tanggal_hujan.length)
+              let tanggal_used = []
+              let hujan_used = []
+              let tekanan_used = []
+              let suhu_used = []
+              let rh_used = []
+              for (let iter_data = tanggal_hujan.length - 1; iter_data >= 0; iter_data=iter_data-10) {
+                tanggal_used.push(tanggal_hujan[iter_data].tanggal)
+                hujan_used.push(tanggal_hujan[iter_data].hujan)
+                tekanan_used.push(tanggal_hujan[iter_data].tekanan)
+                suhu_used.push(tanggal_hujan[iter_data].suhu)
+                rh_used.push(tanggal_hujan[iter_data].rh)
+              }
+
+              tanggal_used.reverse()
+              hujan_used.reverse()
+              tekanan_used.reverse()
+              suhu_used.reverse()
+              rh_used.reverse()
+
+              for (let iter_data = 0; iter_data < tanggal_used.length; iter_data++) {
+                hujan_used[iter_data] = parseFloat(hujan_used[iter_data])
+                tekanan_used[iter_data] = parseFloat(tekanan_used[iter_data])
+                suhu_used[iter_data] = parseFloat(suhu_used[iter_data])
+                rh_used[iter_data] = parseFloat(rh_used[iter_data])
+              }
+
+              let send_data = {}
+              send_data['waktu'] = tanggal_used
+              send_data['hujan'] = hujan_used
+              send_data['suhu'] = suhu_used
+              send_data['tekanan'] = tekanan_used
+              send_data['rh'] = rh_used
+
+              $.ajax({
+                  type: "POST",
+                  url: 'download',
+                  contentType: "application/json", // Set content type to JSON
+                  data: JSON.stringify(send_data), // Convert data to JSON string
+                  xhrFields: {
+                      responseType: 'blob' // Set the response type to 'blob' for binary data
+                  },
+                  success: function(data) {
+                      // Creating a temporary link to trigger the download
+                      var newTab = window.open();
+                      var url = window.URL.createObjectURL(data);
+                      newTab.location.href = url;
+                      window.URL.revokeObjectURL(url);
+                  },
+                  error: function(xhr, status, error) {
+                      console.error("Error fetching Excel file:", status, error);
+                  }
+              });
+
+            }
+          })
+          }
+  </script>
+
+  <script>
+    var Cell1 = [];
+    var CO = [];
+    var NO = [];
+    var SO = [];
+
+   $(document).ready(function () {
+          var greenIcon = new L.Icon({
+            iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+          });
+          var mymap = L.map('mapid').setView([-6.534203, 108.16302], 7);
+          var marker = L.marker([-6.734203, 108.26302], { icon: greenIcon }).addTo(mymap);
+         // var marker2 = L.marker([-6.018219, 105.953171]).addTo(mymap);
+          marker.bindPopup("Titik Pengamatan  <br> <b>Universitas Pamulang Viktor</b>");
+          //marker2.bindPopup("Site 2 <br> Pelabuhan Ciwandan");
+
+          
+          L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          }).addTo(mymap);
+
+          function processData(hujan_arr, suhu_arr, tekanan_arr, rh_arr) {
+            //console.log('fire', hujan_arr, suhu_arr, tekanan_arr, rh_arr)
+
+            let send_data = {}
+            send_data['hujan'] = hujan_arr
+            send_data['suhu'] = suhu_arr
+            send_data['tekanan'] = tekanan_arr
+            send_data['rh'] = rh_arr
+
+            //console.log('fire', send_data)
+
+            // Send a POST request using the fetch API
+            fetch('predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                // Convert the form data to JSON
+                body: JSON.stringify(send_data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response from server:', data)
+                let hujan_stat = data['hujan']
+                let suhu_stat = data['suhu']
+                let tekanan_stat = data['tekanan']
+                let rh_stat = data['rh']
+
+                let cnt_hujan = 0
+                let cnt_suhu = 0
+                let cnt_tekanan = 0
+                let cnt_rh = 0
+
+                let hujan_stat_cnt = []
+                let suhu_stat_cnt = []
+                let tekanan_stat_cnt = []
+                let rh_stat_cnt = []
+                for (let iter_stat = 0; iter_stat < hujan_stat.length; iter_stat++) {
+                  
+                  if (tekanan_stat[iter_stat] > 0.5) {
+                    cnt_tekanan++
+                  } else {
+                    cnt_tekanan = 0
+                  }
+                  
+                  if (suhu_stat[iter_stat] > 0.5) {
+                    cnt_suhu++
+                  } else {
+                    cnt_suhu = 0
+                  }
+
+                  if (hujan_stat[iter_stat] > 0.5) {
+                    cnt_hujan++
+                  } else {
+                    cnt_hujan = 0
+                  }
+
+                  if (rh_stat[iter_stat] > 0.5) {
+                    cnt_rh++
+                  } else {
+                    cnt_rh = 0
+                  }
+
+                  hujan_stat_cnt.push(cnt_hujan)
+                  suhu_stat_cnt.push(cnt_suhu)
+                  tekanan_stat_cnt.push(cnt_tekanan)
+                  rh_stat_cnt.push(cnt_rh)
+                }
+
+                //console.log('stat', hujan_stat_cnt)
+
+                const threshold_rusak = 24
+                for (let iter_stat = 0; iter_stat < hujan_stat_cnt.length; iter_stat++) {
+                  let single_keterangan = ''
+                  let single_rusak = []
+                  let single_error = []
+                    
+                  if (hujan_stat_cnt[iter_stat] >= threshold_rusak) {
+                    single_rusak.push('hujan')
+                  } else if (hujan_stat_cnt[iter_stat] > 0) {
+                    single_error.push('hujan')
+                  }
+
+                  if (suhu_stat_cnt[iter_stat] >= threshold_rusak) {
+                    single_rusak.push('suhu')
+                  } else if (suhu_stat_cnt[iter_stat] > 0) {
+                    single_error.push('suhu')
+                  }
+
+                  if (tekanan_stat_cnt[iter_stat] >= threshold_rusak) {
+                    single_rusak.push('tekanan')
+                  } else if (tekanan_stat_cnt[iter_stat] > 0) {
+                    single_error.push('tekanan')
+                  }
+
+                  if (rh_stat_cnt[iter_stat] >= threshold_rusak) {
+                    single_rusak.push('rh')
+                  } else if (rh_stat_cnt[iter_stat] > 0) {
+                    single_error.push('rh')
+                  }
+                  
+
+                  for (let iter_check = 0; iter_check < single_rusak.length; iter_check++) {
+                    if (iter_check == 0) {
+                      single_keterangan += single_rusak[iter_check]
+                    } else if (iter_check == single_rusak.length - 1) {
+                      single_keterangan += ' dan ' + single_rusak[iter_check]
+                    } else {
+                      single_keterangan += ', ' + single_rusak[iter_check]
+                    }
+                  }
+                  if (single_rusak.length > 0) {
+                    single_keterangan += ' indikasi rusak. '
+                  }
+                    
+
+                  for (let iter_check = 0; iter_check < single_error.length; iter_check++) {
+                    if (iter_check == 0) {
+                      single_keterangan += single_error[iter_check]
+                    } else if (iter_check == single_error.length - 1) {
+                      single_keterangan += ' dan ' + single_error[iter_check]
+                    } else {
+                      single_keterangan += ', ' + single_error[iter_check]
+                    }
+                  }
+                  if (single_error.length > 0) {
+                    single_keterangan += ' error.'
+                  }
+
+                  if (single_keterangan == '') {
+                    single_keterangan = 'normal'
+                  }
+
+                  console.log('stat', single_keterangan)
+
+                  let ket_cell = document.getElementById('ket-'+iter_stat)
+                  ket_cell.innerHTML = single_keterangan
+
+                }
+                // You can handle the response data as needed
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+          }
+
+          function DownloadData() {
+          let staticURL = 'current_data'
+          //console.log('cek alamat', dynamicURL)
+          // AJAX request
+          $.ajax({
+            url: staticURL,
+            method: "GET",
+            dataType: "json",
+            success: function(data){
+              // Update the result div with the response
+              //$("#result").html("Data: " + JSON.stringify(data));
+              //console.log('cek data', data)
+              let time_now = new Date()
+              let time_now_utc = Date(time_now.getUTCFullYear(), time_now.getUTCMonth(),
+              time_now.getUTCDate(), time_now.getUTCHours(),
+              time_now.getUTCMinutes(), 0)
+
+              time_now_utc = new Date(time_now_utc)
+              //add lag
+              time_now_utc.setHours(time_now.getHours() - 24)
+              
+              //make sure minute only 0 10 20 30 40 50
+              time_now_utc.setMinutes(parseInt(time_now_utc.getUTCMinutes() / 10) * 10)
+
+              let last_row = data[0]
+              let last_date = new Date(last_row['tanggal'])
+              //console.log('check last date', last_date)
+
+              tanggal_hujan = []
+              for (let iter_data = 0; iter_data < data.length; iter_data++) {
+                //console.log(data[iter_data]['tanggal'])
+                single_dict = {}
+                single_dict['tanggal'] = data[iter_data]['tanggal']
+                single_dict['hujan'] = data[iter_data]['rr']
+                single_dict['tekanan'] = data[iter_data]['pp_air']
+                single_dict['suhu'] = data[iter_data]['tt_air_avg']
+                single_dict['rh'] = data[iter_data]['rh_avg']
+                tanggal_hujan.push(single_dict)
+              }
+
+              tanggal_hujan.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal))
+              //get data used
+              //console.log('cek tanggal hujan', tanggal_hujan, tanggal_hujan.length)
+              let tanggal_used = []
+              let hujan_used = []
+              let tekanan_used = []
+              let suhu_used = []
+              let rh_used = []
+              for (let iter_data = tanggal_hujan.length - 1; iter_data >= 0; iter_data=iter_data-10) {
+                tanggal_used.push(tanggal_hujan[iter_data].tanggal)
+                hujan_used.push(tanggal_hujan[iter_data].hujan)
+                tekanan_used.push(tanggal_hujan[iter_data].tekanan)
+                suhu_used.push(tanggal_hujan[iter_data].suhu)
+                rh_used.push(tanggal_hujan[iter_data].rh)
+              }
+
+              tanggal_used.reverse()
+              hujan_used.reverse()
+              tekanan_used.reverse()
+              suhu_used.reverse()
+              rh_used.reverse()
+
+              for (let iter_data = 0; iter_data < tanggal_used.length; iter_data++) {
+                hujan_used[iter_data] = parseFloat(hujan_used[iter_data])
+                tekanan_used[iter_data] = parseFloat(tekanan_used[iter_data])
+                suhu_used[iter_data] = parseFloat(suhu_used[iter_data])
+                rh_used[iter_data] = parseFloat(rh_used[iter_data])
+              }
+
+              let send_data = {}
+              send_data['hujan'] = hujan_used
+              send_data['suhu'] = suhu_used
+              send_data['tekanan'] = tekanan_used
+              send_data['rh'] = rh_used
+
+              fetch('predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                // Convert the form data to JSON
+                body: JSON.stringify(send_data)
+              })
+
+            }
+          })
+          }
+
+
+          function fetchData() {
+          //https://apiaws.bmkg.go.id/getdata?filter=*&token=4g228NjcECMSyaPEfucDKYDuZs8WpV&tipe_station=aws&tgl_mulai=2023-01-01&tgl_selesai=2023-01-10&id_station=STA2155
+          // Get the dynamically generated URL based on current date and time
+          let datenow = new Date()
+          // Calculate the date three days ago
+          let datepast = new Date(datenow)
+          datepast.setDate(datenow.getDate() - 1)
+
+          let year = datenow.getUTCFullYear()
+          
+          let month = datenow.getUTCMonth()
+          if (month < 10) {
+            month = '0'+month
+          }
+
+          let day = datenow.getUTCDate()
+          if (day < 10) {
+            day = '0'+day
+          }
+
+          let hour = datenow.getUTCHours()
+          if (hour < 10) {
+            hour = '0'+hour
+          }
+
+          let minute = datenow.getUTCMinutes()
+          if (minute < 10) {
+            minute = '0'+minute
+          }
+
+          let str_datenow = year+'-'+month+'-'+day+'%20'+hour+':'+minute+':00'
+
+          let year_past = datepast.getUTCFullYear()
+
+          let month_past = datepast.getUTCMonth()
+          if (month_past < 10) {
+            month_past = '0'+month
+          }
+
+          let day_past = datepast.getUTCDate()
+          if (day_past < 10) {
+            day_past = '0'+day
+          }
+
+          let hour_past = datepast.getUTCHours()
+          if (hour_past < 10) {
+            hour_past = '0'+hour
+          }
+
+          let minute_past = datepast.getUTCMinutes()
+          if (minute_past < 10) {
+            minute_past = '0'+minute
+          }
+
+          let str_datepast = year_past+'-'+month_past+'-'+day_past+'%20'+hour_past+':'+minute_past+':00'
+
+          let dynamicURL = "https://apiaws.bmkg.go.id/getdata?filter=*&token=4g228NjcECMSyaPEfucDKYDuZs8WpV&tipe_station=aws&tgl_mulai=" + str_datepast + '&tgl_selesai=' + str_datenow + '&id_station=STA2155' // Replace with your base API URL
+          let staticURL = 'current_data'
+          //console.log('cek alamat', dynamicURL)
+          // AJAX request
+          $.ajax({
+            url: staticURL,
+            method: "GET",
+            dataType: "json",
+            success: function(data){
+              // Update the result div with the response
+              //$("#result").html("Data: " + JSON.stringify(data));
+              //console.log('cek data', data)
+              let time_now = new Date()
+              let time_now_utc = Date(time_now.getUTCFullYear(), time_now.getUTCMonth(),
+              time_now.getUTCDate(), time_now.getUTCHours(),
+              time_now.getUTCMinutes(), 0)
+
+              time_now_utc = new Date(time_now_utc)
+              //add lag
+              time_now_utc.setHours(time_now.getHours() - 24)
+              
+              //make sure minute only 0 10 20 30 40 50
+              time_now_utc.setMinutes(parseInt(time_now_utc.getUTCMinutes() / 10) * 10)
+
+              let last_row = data[0]
+              let last_date = new Date(last_row['tanggal'])
+              //console.log('check last date', last_date)
+
+              tanggal_hujan = []
+              for (let iter_data = 0; iter_data < data.length; iter_data++) {
+                //console.log(data[iter_data]['tanggal'])
+                single_dict = {}
+                single_dict['tanggal'] = data[iter_data]['tanggal']
+                single_dict['hujan'] = data[iter_data]['rr']
+                single_dict['tekanan'] = data[iter_data]['pp_air']
+                single_dict['suhu'] = data[iter_data]['tt_air_avg']
+                single_dict['rh'] = data[iter_data]['rh_avg']
+                tanggal_hujan.push(single_dict)
+              }
+
+              tanggal_hujan.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal))
+              //get data used
+              //console.log('cek tanggal hujan', tanggal_hujan, tanggal_hujan.length)
+              let tanggal_used = []
+              let hujan_used = []
+              let tekanan_used = []
+              let suhu_used = []
+              let rh_used = []
+              for (let iter_data = tanggal_hujan.length - 1; iter_data >= 0; iter_data=iter_data-10) {
+                tanggal_used.push(tanggal_hujan[iter_data].tanggal)
+                hujan_used.push(tanggal_hujan[iter_data].hujan)
+                tekanan_used.push(tanggal_hujan[iter_data].tekanan)
+                suhu_used.push(tanggal_hujan[iter_data].suhu)
+                rh_used.push(tanggal_hujan[iter_data].rh)
+              }
+
+              tanggal_used.reverse()
+              hujan_used.reverse()
+              tekanan_used.reverse()
+              suhu_used.reverse()
+              rh_used.reverse()
+
+              for (let iter_data = 0; iter_data < tanggal_used.length; iter_data++) {
+                hujan_used[iter_data] = parseFloat(hujan_used[iter_data])
+                tekanan_used[iter_data] = parseFloat(tekanan_used[iter_data])
+                suhu_used[iter_data] = parseFloat(suhu_used[iter_data])
+                rh_used[iter_data] = parseFloat(rh_used[iter_data])
+              }
+
+              //tanggal_used = tanggal_used.slice(0, 24)
+              //hujan_used = hujan_used.slice(0, 24)
+              //tekanan_used = tekanan_used.slice(0, 24)
+              //suhu_used = suhu_used.slice(0, 24)
+              //rh_used = rh_used.slice(0, 24)
+
+              processData(hujan_used, suhu_used, tekanan_used, rh_used)
+
+             
+              //input data to table
+              let table_content = document.getElementById('dataTableContent')
+              table_content.innerHTML = ''
+
+              //for (let iter_data = 0; iter_data < tanggal_used.length; iter_data++) {
+              for (let iter_data = tanggal_used.length-1; iter_data >= 0; iter_data--) {
+                let tr = document.createElement('tr')
+
+                let td = document.createElement('td')
+                td.innerHTML = tanggal_used[iter_data]
+                tr.appendChild(td)
+
+                td = document.createElement('td')
+                td.innerHTML = hujan_used[iter_data]
+                tr.appendChild(td)
+
+                td = document.createElement('td')
+                td.innerHTML = suhu_used[iter_data]
+                tr.appendChild(td)
+
+                td = document.createElement('td')
+                td.innerHTML = tekanan_used[iter_data]
+                tr.appendChild(td)
+
+                td = document.createElement('td')
+                td.innerHTML = rh_used[iter_data]
+                tr.appendChild(td)
+
+                td = document.createElement('td')
+                td.id = 'ket-'+iter_data
+                tr.appendChild(td)
+
+                table_content.appendChild(tr)
+              }
+
+              //while (time_now_utc <= time_future_utc) {
+              //  console.log(time_now_utc, time_future_utc)
+              //  time_now_utc.setMinutes(time_now_utc.getUTCMinutes() + 10)
+              //}
+
+              console.log('check time', tanggal_used)
+
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+              // Handle errors
+              console.log("AJAX Error: " + textStatus, errorThrown);
+            }
+          });
+        }
+
+        fetchData()
+		  
+    });
+ 
+  </script>
+</body>
+
+</html>

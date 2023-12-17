@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>Ordinary Chess Game</title>
+  <base href="../" />
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
+        crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"
+        integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD"
+        crossorigin="anonymous"></script>
+  
+  <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css" integrity="sha384-q94+BZtLrkL1/ohfjR8c6L+A6qzNH9R2hBLwyoAfu3i/WCvQjzL2RQJ3uNHDISdU" crossorigin="anonymous">
+  
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #myTitle {
+      margin-top: 20px; /* Adjust the top margin as needed */
+    }
+
+    #myBoard {
+      width: 800px;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="myTitle">Let's play Chess</h1>
+
+  <!--- Begin Example HTML ------------------------------------------------------>
+  <div id="myBoard"></div>
+  <!--- End Example HTML -------------------------------------------------------->
+
+  <script src="{{url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+  <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js" integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD" crossorigin="anonymous"></script>
+  <script>
+
+    let hist_move = []
+
+    function onDragStart (source, piece, position, orientation) {
+      // Implement your logic here if needed
+      console.log(source)
+    }
+
+    function onSnapEnd () {
+      board.position(board.position())
+    }
+
+    function onDrop (source, target) {
+      console.log('source target', source, target)
+      let candidate_move = source+target
+      let pre_hist_move = hist_move
+      pre_hist_move.push(candidate_move)
+      let data = {'history': pre_hist_move}
+
+      //return 'snapback'
+
+      $.ajax({
+        url: "get_move", // Replace with your API endpoint
+        method: "POST", // Use the appropriate HTTP method
+        contentType: "application/json", // Specify that you're sending JSON data
+        data: JSON.stringify(data), // Convert JSON data to a string
+        dataType: "json",
+        success: function(response) {
+          console.log("Request successful:", response)
+          let legality = response['legal']
+          console.log('cek legal', legality)
+          if (!legality) {
+            console.log('yo, snapback to reality')
+            return 'snapback'
+          }
+
+          // Validate the move here
+          var move = board.move({
+            from: source,
+            to: target,
+            promotion: 'q', // replace with actual promotion logic if needed
+          });
+
+          if (move === null) {
+            // Invalid move, revert the move by returning 'snapback'
+            return 'snapback'
+          }
+
+          // Move was valid, update the board state
+          updateBoard();
+
+        },
+        error: function(xhr, status, error) {
+          console.error("AJAX request failed:", status, error);
+        }
+      });
+      
+    }
+
+    function updateBoard() {
+      board.position(board.fen());
+      // Implement any other necessary logic after a valid move
+    }
+
+    var config = {
+      pieceTheme: '/static/img/chess/{piece}.png',
+      position: 'start',
+      draggable: true,
+      onDragStart: onDragStart,
+      onSnapEnd: onSnapEnd,
+      onDrop: onDrop,
+    }
+    // --- Begin Example JS --------------------------------------------------------
+    var board = Chessboard('myBoard', config)
+    console.log(board.position())
+    console.log(board.fen())
+    // --- End Example JS ----------------------------------------------------------
+  </script>
+</body>
+</html>
