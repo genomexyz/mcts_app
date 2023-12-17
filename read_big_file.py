@@ -15,11 +15,11 @@ for df in read_data(file_path):
 exit()
 
 
-#with open(file_path, 'r') as file:
-#    for line in file:
-#        # Process each line
-#        print(line.strip())  # Example: Print each line (without leading/trailing whitespaces)
-#        break
+with open(file_path, 'r') as file:
+    for line in file:
+        # Process each line
+        print(line.strip())  # Example: Print each line (without leading/trailing whitespaces)
+        break
         #cnt += 1
         #if cnt > cnt_limit:
         #    break
