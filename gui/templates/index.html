@@ -83,10 +83,10 @@
         data: JSON.stringify(data), // Convert JSON data to a string
         dataType: "json",
         success: function(response) {
-          console.log("Request successful:", response)
+          //console.log("Request successful:", response)
           let legality = response['legal']
-          console.log('cek legal', legality)
-          console.log('cek hist', hist_move)
+          //console.log('cek legal', legality)
+          //console.log('cek hist', hist_move)
           if (!legality) {
             console.log('yo, snapback to reality')
             //board.move(target+'-'+source)
@@ -101,7 +101,7 @@
             pos_b_castling_long = board.position()['c8']
             console.log('cek move pre', source+target, pos_w_castling_short == 'wk', source+target == 'e1g1')
             if (pos_w_castling_short == 'wK' && (source+target == 'e1g1')) {
-              console.log('cek move')
+              //console.log('cek move')
               board.move('h1-f1')
             } else if (pos_w_castling_long == 'wK' && (source+target == 'e1c1')) {
               board.move('a1-d1')
