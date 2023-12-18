@@ -45,6 +45,10 @@
   <script>
 
     let hist_move = []
+    castling_longw_valid = true
+    castling_shortw_valid = true
+    castling_longb_valid = true
+    castling_shortb_valid = true
 
     function onDragStart (source, piece, position, orientation) {
       // Implement your logic here if needed
@@ -90,6 +94,23 @@
             return true
           } else {
             hist_move.push(source+target)
+
+            pos_w_castling_short = board.position()['g1']
+            pos_b_castling_short = board.position()['g8']
+            pos_w_castling_long = board.position()['c1']
+            pos_b_castling_long = board.position()['c8']
+            console.log('cek move pre', source+target, pos_w_castling_short == 'wk', source+target == 'e1g1')
+            if (pos_w_castling_short == 'wK' && (source+target == 'e1g1')) {
+              console.log('cek move')
+              board.move('h1-f1')
+            } else if (pos_w_castling_long == 'wK' && (source+target == 'e1c1')) {
+              board.move('a1-d1')
+            } else if (pos_b_castling_short == 'bK' && (source+target == 'e8g8')) {
+              board.move('h8-f8')
+            } else if (pos_b_castling_long == 'bK' && (source+target == 'e8c8')) {
+              board.move('a8-d8')
+            }
+
           }
           
           /*else {
