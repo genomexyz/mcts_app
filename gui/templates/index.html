@@ -55,15 +55,23 @@
       board.position(board.position())
     }
 
+    let onprocess = false
     function onDrop (source, target) {
+      //return 'snapback'
+      if (onprocess) {
+        return 'snapback'
+      }
+
       console.log('source target', source, target)
       let candidate_move = source+target
-      let pre_hist_move = hist_move
+      let pre_hist_move = hist_move.slice()
       pre_hist_move.push(candidate_move)
       let data = {'history': pre_hist_move}
 
       //return 'snapback'
 
+      let previous_post = board.fen()
+      console.log('cek data', data)
       $.ajax({
         url: "get_move", // Replace with your API endpoint
         method: "POST", // Use the appropriate HTTP method
@@ -74,31 +82,32 @@
           console.log("Request successful:", response)
           let legality = response['legal']
           console.log('cek legal', legality)
+          console.log('cek hist', hist_move)
           if (!legality) {
             console.log('yo, snapback to reality')
-            return 'snapback'
+            //board.move(target+'-'+source)
+            board.position(previous_post);
+            return true
+          } else {
+            hist_move.push(source+target)
           }
-
-          // Validate the move here
-          var move = board.move({
-            from: source,
-            to: target,
-            promotion: 'q', // replace with actual promotion logic if needed
-          });
-
-          if (move === null) {
-            // Invalid move, revert the move by returning 'snapback'
+          
+          /*else {
+            board.move(source+'-'+target)
+            hist_move.push(source+target)
             return 'snapback'
-          }
+          }*/
 
-          // Move was valid, update the board state
-          updateBoard();
+          onprocess = false
 
         },
         error: function(xhr, status, error) {
-          console.error("AJAX request failed:", status, error);
+          console.error("AJAX request failed:", status, error)
+          board.position(previous_post)
+          onprocess = false
         }
-      });
+      })
+      //return 'snapback'
       
     }
 

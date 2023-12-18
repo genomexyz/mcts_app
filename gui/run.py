@@ -37,6 +37,9 @@ def get_move():
         
         if single_hist not in legal_move_str:
             return res
+        
+        move_uci = chess.Move.from_uci(single_hist)
+        board.push(move_uci)
     
     res['legal'] = True
     return res
