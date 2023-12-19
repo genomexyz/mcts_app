@@ -18,6 +18,12 @@ import chess.pgn
 #setting
 encryption_key = b'0123456789abcdef'  # Use a valid key size: 16 bytes (128 bits)
 
+def save_knowledge():
+    with open('knowledge.pkl', 'wb') as f:
+        pickle.dump(knowledge, f)
+    with open('knowledge_map_val.pkl', 'wb') as f:
+        pickle.dump(knowledge_map, f)
+
 def pad(data):
     padder = padding.PKCS7(algorithms.AES.block_size).padder()
     return padder.update(data) + padder.finalize()
@@ -47,6 +53,9 @@ with open('knowledge.pkl', 'rb') as f:
     knowledge = pickle.load(f)
 with open('knowledge_map_val.pkl', 'rb') as f:
     knowledge_map = pickle.load(f)
+
+knowledge_new = {}
+knowledge_map_new = {}
 
 # Creating a Flask web application
 app = Flask(__name__)
@@ -79,6 +88,25 @@ def get_move():
         move_uci = chess.Move.from_uci(single_hist)
         board.push(move_uci)
     
+    code_hist_move = '|'.join(hist_move)
+    try:
+        state = knowledge[code_hist_move]
+    except KeyError:
+        knowledge[code_hist_move] = {}
+        knowledge[code_hist_move]['visit'] = 1
+        #knowledge[code_move_parent_encode]['value'] = 0
+        knowledge[code_hist_move]['children'] = []
+        knowledge_map[code_hist_move] = 0
+        state = knowledge[code_hist_move]
+    
+    if len(state['children']) == 0:
+        all_move = list(board.legal_moves)
+        all_move_str = []
+        for iter_move in range(len(all_move)):
+            all_move_str.append(all_move[iter_move])
+        
+
+
     res['legal'] = True
     return res
 
