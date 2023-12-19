@@ -42,7 +42,7 @@ def encode_name(name, key):
     padded_data = pad(name.encode('utf-8'))
     #print(padded_data)
     encrypted_name = encryptor.update(padded_data) + encryptor.finalize()
-    return base64.b64encode(encrypted_name)[:8].decode('utf-8')  # Adjust the length as needed
+    return base64.b64encode(encrypted_name).decode('utf-8')  # Adjust the length as needed
 
 
 mode_absorb = True
@@ -92,9 +92,14 @@ for iter_move in range(len(all_move_white_win)):
     for iter_hist in range(len(single_move_hist)):
         code_move_parent = '|'.join(single_move_hist[0:iter_hist])
         code_move = '|'.join(single_move_hist[0:iter_hist+1])
+        code_move_tip = single_move_hist[iter_hist]
 
-        code_move_parent_encode = encode_name(code_move_parent, encryption_key)
-        code_move_encode = encode_name(code_move, encryption_key)
+        #code_move_parent_encode = encode_name(code_move_parent, encryption_key)
+        #code_move_encode = encode_name(code_move, encryption_key)
+
+        code_move_parent_encode = code_move_parent
+        code_move_encode = code_move
+        code_move_tip_encode = code_move_tip
 
         try:
             knowledge[code_move_parent_encode]['visit'] += 1
@@ -106,7 +111,7 @@ for iter_move in range(len(all_move_white_win)):
             knowledge_map_val[code_move_parent_encode] = 0
         
         if code_move_encode not in knowledge[code_move_parent_encode]['children']:
-            knowledge[code_move_parent_encode]['children'].append(code_move_encode)
+            knowledge[code_move_parent_encode]['children'].append(code_move_tip_encode)
         
         try:
             knowledge[code_move_encode]['visit'] += 1
@@ -135,9 +140,14 @@ for iter_move in range(len(all_move_black_win)):
     for iter_hist in range(len(single_move_hist)):
         code_move_parent = '|'.join(single_move_hist[0:iter_hist])
         code_move = '|'.join(single_move_hist[0:iter_hist+1])
+        code_move_tip = single_move_hist[iter_hist]
 
-        code_move_parent_encode = encode_name(code_move_parent, encryption_key)
-        code_move_encode = encode_name(code_move, encryption_key)
+        #code_move_parent_encode = encode_name(code_move_parent, encryption_key)
+        #code_move_encode = encode_name(code_move, encryption_key)
+
+        code_move_parent_encode = code_move_parent
+        code_move_encode = code_move
+        code_move_tip_encode = code_move_tip
 
         try:
             knowledge[code_move_parent_encode]['visit'] += 1
@@ -149,7 +159,7 @@ for iter_move in range(len(all_move_black_win)):
             knowledge_map_val[code_move_parent_encode] = 0
         
         if code_move_encode not in knowledge[code_move_parent_encode]['children']:
-            knowledge[code_move_parent_encode]['children'].append(code_move_encode)
+            knowledge[code_move_parent_encode]['children'].append(code_move_tip_encode)
         
         try:
             knowledge[code_move_encode]['visit'] += 1
