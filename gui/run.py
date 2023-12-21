@@ -12,6 +12,8 @@ from base64 import b64decode
 from cryptography.hazmat.primitives import padding
 import base64
 
+import random
+
 import chess
 import chess.pgn
 
@@ -100,11 +102,33 @@ def get_move():
         state = knowledge[code_hist_move]
     
     if len(state['children']) == 0:
+        print('enter random choice')
         all_move = list(board.legal_moves)
         all_move_str = []
         for iter_move in range(len(all_move)):
-            all_move_str.append(all_move[iter_move])
-        
+            all_move_str.append(str(all_move[iter_move]))
+        move_choice = random.choice(all_move_str)
+    else:
+        print('enter determined choice')
+        all_move_val = []
+        avail_choice = state['children']
+        for iter_child in range(len(avail_choice)):
+            single_key = code_hist_move+'|'+avail_choice[iter_child]
+            single_val = knowledge_map[single_key]
+            all_move_val.append(single_val)
+        all_move_val = np.array(all_move_val)
+        max_val = np.max(all_move_val)
+        if max_val < 1:
+            all_move = list(board.legal_moves)
+            all_move_str = []
+            for iter_move in range(len(all_move)):
+                all_move_str.append(str(all_move[iter_move]))
+            move_choice = random.choice(all_move_str)
+        else:
+            idx_choice = np.argmax(all_move_val)
+            move_choice = avail_choice[idx_choice]
+        print('choice', max_val, move_choice)
+    res['move'] = move_choice
 
 
     res['legal'] = True

@@ -37,5 +37,7 @@ def get_possible_responses(board):
     return list(board.legal_moves)
 
 board = chess.Board()
+cek = board.is_checkmate()
+print('cek checkmate', cek, board.turn, chess.WHITE)
 all_move = get_possible_responses(board)
 print(str(all_move[0]))
