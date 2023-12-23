@@ -12,3 +12,4 @@ board.push(Nf3)  # Make the move
 print(board)
 print(board.peek())
 print(board.move_stack)
+print(list(board.legal_moves))

@@ -41,3 +41,4 @@ cek = board.is_checkmate()
 print('cek checkmate', cek, board.turn, chess.WHITE)
 all_move = get_possible_responses(board)
 print(str(all_move[0]))
+psn = board.piece_map
