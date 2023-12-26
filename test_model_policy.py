@@ -24,6 +24,9 @@ class ChessNet(nn.Module):
         # Hidden layers
         for i in range(1, len(hidden_neurons)):
             self.layers.append(nn.Linear(hidden_neurons[i-1], hidden_neurons[i]))
+            self.layers.append(nn.ReLU())
+            self.layers.append(nn.BatchNorm1d(hidden_neurons[i]))
+
 
         # Output layer
         self.output_layer = nn.Linear(hidden_neurons[-1], output_size)
@@ -35,17 +38,19 @@ class ChessNet(nn.Module):
     
     def forward(self, x):
         for layer in self.layers:
-            x = self.activation(layer(x))
+            x = layer(x)
         x = self.output_activation(self.output_layer(x))
         return x
 
 # Example usage:
 input_size = 128
-hidden_neurons = [128, 100, 64, 64]  # Customize the number of neurons in each hidden layer
+hidden_neurons = [128, 100, 64, 64, 64]  # Customize the number of neurons in each hidden layer
 output_size = 1  # Assuming a regression task, adjust for classification tasks
 
 # Instantiate the neural network
+checkpoint = torch.load("model_policy2_final.pt", map_location=torch.device('cpu'))
 model = ChessNet(input_size, hidden_neurons, output_size).double()
+model.load_state_dict(checkpoint['model'])
 # Define Binary Cross Entropy Loss
 criterion = nn.BCELoss()
 print(model)
@@ -55,7 +60,7 @@ all_label = np.load('label_policy_new.npy')
 
 print('cek data')
 print('%s/%s'%(np.sum(all_label), len(all_label)))
-exit()
+#exit()
 
 min_input = np.min(all_input)
 max_input = np.max(all_input)
@@ -86,5 +91,5 @@ for i, (input, label) in enumerate(dataloader):
 print(acc_arr)
 
 total_data = len(acc_arr)
-acc = np.sum(acc_arr) / total_data
+acc = 1 - (np.sum(acc_arr) / total_data)
 print('acc %s'%(acc))

@@ -24,6 +24,9 @@ class ChessNet(nn.Module):
         # Hidden layers
         for i in range(1, len(hidden_neurons)):
             self.layers.append(nn.Linear(hidden_neurons[i-1], hidden_neurons[i]))
+            self.layers.append(nn.ReLU())
+            self.layers.append(nn.BatchNorm1d(hidden_neurons[i]))
+
 
         # Output layer
         self.output_layer = nn.Linear(hidden_neurons[-1], output_size)
@@ -35,7 +38,7 @@ class ChessNet(nn.Module):
     
     def forward(self, x):
         for layer in self.layers:
-            x = self.activation(layer(x))
+            x = layer(x)
         x = self.output_activation(self.output_layer(x))
         return x
 
@@ -50,8 +53,8 @@ model = ChessNet(input_size, hidden_neurons, output_size).double()
 criterion = nn.BCELoss()
 print(model)
 
-all_input = np.load('feature_policy_train.npy')
-all_label = np.load('label_policy_train.npy')
+all_input = np.load('feature_policy.npy')
+all_label = np.load('label_policy.npy')
 
 min_input = np.min(all_input)
 max_input = np.max(all_input)
@@ -87,8 +90,8 @@ for epoch in range(epoch_total):
     print('Epoch:{}, Loss:{}'.format(epoch+1, epoch_loss/(i+1)))
     if (epoch+1) % 10 == 0:
         checkpoint = {'model': model.state_dict()}
-        torch.save(checkpoint, "model_policy2_epoch-%s.pt"%(epoch+1))
+        torch.save(checkpoint, "model_policy_epoch-%s.pt"%(epoch+1))
     #break
 
 checkpoint = {'model': model.state_dict()}
-torch.save(checkpoint, "model_policy2_final.pt")
+torch.save(checkpoint, "model_policy_final.pt")
