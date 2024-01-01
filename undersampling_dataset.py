@@ -1,7 +1,7 @@
 import numpy as np
 
-all_input = np.load('feature_policy_new.npy')
-all_label = np.load('label_policy_new.npy')
+all_input = np.load('feature_policy2d.npy')
+all_label = np.load('label_policy2d.npy')
 
 input_pos = all_input[all_label > 0]
 input_neg = all_input[all_label == 0]
@@ -21,5 +21,5 @@ randomizer = np.arange(len(input_new))
 np.random.shuffle(randomizer)
 input_new = input_new[randomizer]
 label_new = label_new[randomizer]
-np.save('feature_policy_train.npy', input_new)
-np.save('label_policy_train.npy', label_new)
+np.save('feature_policy2d_train.npy', input_new)
+np.save('label_policy2d_train.npy', label_new)
