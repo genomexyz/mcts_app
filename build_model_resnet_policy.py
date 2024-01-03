@@ -64,6 +64,7 @@ class ChessResNet(nn.Module):
         x = F.avg_pool2d(x, 8)
         x = x.view(x.size(0), -1)
         x = self.output_activation(self.fc(x))
+        #x = self.fc(x)
         return x
 
 # Example usage:
@@ -74,8 +75,8 @@ output_size = 1  # Assuming a regression task, adjust for classification tasks
 # Instantiate the neural network
 model = ChessResNet().double()
 # Define Binary Cross Entropy Loss
-criterion = nn.BCELoss()
-#criterion = nn.BCEWithLogitsLoss()
+#criterion = nn.BCELoss()
+criterion = nn.BCEWithLogitsLoss()
 print(model)
 
 all_input = np.load('feature_policy2d.npy')
@@ -109,8 +110,9 @@ for epoch in range(epoch_total):
         #print('label', label)
 
         optimizer.zero_grad()
-        #print(input)
-        #print('cek label', label)
+        print(input)
+        print('cek label', label)
+        print('cek max', torch.max(predict))
         loss = criterion(predict, label)
         loss.backward()
         optimizer.step()
