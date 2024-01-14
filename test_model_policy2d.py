@@ -71,7 +71,7 @@ hidden_neurons = [128, 100, 64, 64, 64]  # Customize the number of neurons in ea
 output_size = 1  # Assuming a regression task, adjust for classification tasks
 
 # Instantiate the neural network
-checkpoint = torch.load("model_policy2d_new_epoch-38.pt", map_location=torch.device('cpu'))
+checkpoint = torch.load("model_policy2d_new_epoch-61.pt", map_location=torch.device('cpu'))
 model = ChessResNet().double()
 model.load_state_dict(checkpoint['model'])
 # Define Binary Cross Entropy Loss

@@ -5,6 +5,7 @@ from io import BytesIO
 import pandas as pd
 from flask import Flask, send_file
 import pickle
+from copy import copy
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -27,6 +28,32 @@ import torch.optim as opt
 
 #setting
 encryption_key = b'0123456789abcdef'  # Use a valid key size: 16 bytes (128 bits)
+
+def encode_board(board):
+    encoding = np.zeros((8, 8), dtype=np.int8)
+
+    piece_mapping = {'p': -1, 'r': -2, 'n': -3, 'b': -4, 'q': -5, 'k': -6,
+                     'P': 1, 'R': 2, 'N': 3, 'B': 4, 'Q': 5, 'K': 6}
+
+    for square, piece in board.piece_map().items():
+        row, col = chess.square_rank(square), chess.square_file(square)
+        encoding[row, col] = piece_mapping[piece.symbol()]
+
+    #encoding = encoding.flatten()
+
+    return encoding
+
+def check_game_status(board):
+    if board.is_checkmate():
+        winner = "white" if board.turn == chess.BLACK else "black"
+        print('cek winner', winner)
+    elif board.is_stalemate():
+        winner = 'draw'
+    elif board.is_insufficient_material():
+        winner = 'draw'
+    else:
+        winner = None
+    return winner
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
@@ -83,6 +110,11 @@ class ChessResNet(nn.Module):
 knowledge_new = {}
 knowledge_map_new = {}
 
+# Instantiate the neural network
+checkpoint = torch.load("model_policy2d_new_epoch-61.pt", map_location=torch.device('cpu'))
+model = ChessResNet().double()
+model.load_state_dict(checkpoint['model'])
+
 # Creating a Flask web application
 app = Flask(__name__)
 
@@ -101,6 +133,7 @@ def get_move():
 
     res = {}
     res['legal'] = False
+    res['winner'] = None
     for iter_hist in range(len(hist_move)):
         single_hist = hist_move[iter_hist]
         legal_move = list(board.legal_moves)
@@ -109,51 +142,55 @@ def get_move():
             legal_move_str.append(str(legal_move[iter_legal]))
         
         if single_hist not in legal_move_str:
+            print('cek single hist', single_hist)
+            print('cek legal move', legal_move_str)
             return res
         
         move_uci = chess.Move.from_uci(single_hist)
         board.push(move_uci)
-    
-    code_hist_move = '|'.join(hist_move)
-    try:
-        state = knowledge[code_hist_move]
-    except KeyError:
-        knowledge[code_hist_move] = {}
-        knowledge[code_hist_move]['visit'] = 1
-        #knowledge[code_move_parent_encode]['value'] = 0
-        knowledge[code_hist_move]['children'] = []
-        knowledge_map[code_hist_move] = 0
-        state = knowledge[code_hist_move]
-    
-    if len(state['children']) == 0:
-        print('enter random choice')
-        all_move = list(board.legal_moves)
-        all_move_str = []
-        for iter_move in range(len(all_move)):
-            all_move_str.append(str(all_move[iter_move]))
-        move_choice = random.choice(all_move_str)
-    else:
-        print('enter determined choice')
-        all_move_val = []
-        avail_choice = state['children']
-        for iter_child in range(len(avail_choice)):
-            single_key = code_hist_move+'|'+avail_choice[iter_child]
-            single_val = knowledge_map[single_key]
-            all_move_val.append(single_val)
-        all_move_val = np.array(all_move_val)
-        max_val = np.max(all_move_val)
-        if max_val < 1:
-            all_move = list(board.legal_moves)
-            all_move_str = []
-            for iter_move in range(len(all_move)):
-                all_move_str.append(str(all_move[iter_move]))
-            move_choice = random.choice(all_move_str)
-        else:
-            idx_choice = np.argmax(all_move_val)
-            move_choice = avail_choice[idx_choice]
-        print('choice', max_val, move_choice)
-    res['move'] = move_choice
+        status_game = check_game_status(board)
+        if status_game is not None:
+            print('terpicu, harusnya selesai')
+            res['winner'] = status_game
+            res['move'] = ''
+            return res
+            #break
+        
+    print('cek game status', status_game, board.is_checkmate(), board.turn, chess.BLACK)
+    #evaluate best move by bot
+    legal_move = list(board.legal_moves)
+    legal_move_bot = []
+    for iter_legal in range(len(legal_move)):
+        legal_move_bot.append(str(legal_move[iter_legal]))
+    old_board_state = copy(board)
+    all_input = []
+    for iter_op in range(len(legal_move_bot)):
+        new_board = copy(board)
+        move_uci = chess.Move.from_uci(legal_move_bot[iter_op])
+        new_board.push(move_uci)
+        
+        new_state_board = encode_board(new_board)
+        old_state_board = encode_board(old_board_state)
+        
+        input_feature = [old_state_board, new_state_board]
+        input_feature = np.array(input_feature)
 
+        if len(all_input) == 0:
+            all_input = np.reshape(input_feature, (1, 2, len(old_state_board), len(new_state_board[0])))
+        else:
+            all_input = np.concatenate([all_input, np.reshape(input_feature, (1, 2, len(old_state_board), len(new_state_board[0])))])
+    min_input = np.min(all_input)
+    max_input = np.max(all_input)
+
+    all_input = (all_input - min_input) / (max_input - min_input)
+
+    all_input_torch = torch.from_numpy(all_input)
+    predict = model(all_input_torch)
+    predict = predict.squeeze()
+    idx_bot = torch.argmax(predict)
+    bot_move_choosen = legal_move_bot[idx_bot]
+    res['move'] = bot_move_choosen
+    #print('cek predict', predict)
 
     res['legal'] = True
     return res

@@ -5,10 +5,15 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <title>Ordinary Chess Game</title>
   <base href="../" />
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+  
+  <!--<script src="https://code.jquery.com/jquery-3.5.1.min.js"
         integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous"></script>-->
+  
+  <script src="{{url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
 
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
   <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"
         integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD"
         crossorigin="anonymous"></script>
@@ -31,24 +36,253 @@
     #myBoard {
       width: 800px;
     }
+
+    #move-history {
+      margin-top: 20px;
+      padding: 10px;
+      max-width: 400px;
+      overflow-y: auto;
+      height: 770px;
+    }
+
+    #move-history tr, table, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+
+    button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #45a049; /* Darker Green */
+        }
+
   </style>
 </head>
 <body>
   <h1 id="myTitle">Vs '10K experience games' bot</h1>
 
+  <h1 id="winner">Winner:</h1>
+
   <!--- Begin Example HTML ------------------------------------------------------>
-  <div id="myBoard"></div>
+  <div>
+    <div id="myBoard" style="display: inline-block;"></div>
+    <div id="move-history" style="display: inline-block;">
+      <table id="histmove">
+      </table>
+    </div>
+  </div>
+
+  <!-- Promotion Modal -->
+  <div class="modal fade" id="promotionModal" tabindex="-1" role="dialog" aria-labelledby="promotionModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="promotionModalLabel">Select a piece for promotion</h5>
+          <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>-->
+        </div>
+        <div class="modal-body">
+          <p>Choose a piece to promote your pawn:</p>
+          <div class="btn-group" role="group" aria-label="Promotion Pieces">
+            <button type="button" class="btn btn-primary" onclick="promotePawn('Q')" id="pq">Queen</button>
+            <button type="button" class="btn btn-primary" onclick="promotePawn('R')" id="pr">Rook</button>
+            <button type="button" class="btn btn-primary" onclick="promotePawn('B')" id="pb">Bishop</button>
+            <button type="button" class="btn btn-primary" onclick="promotePawn('N')" id="pn">Knight</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <!--- End Example HTML -------------------------------------------------------->
 
-  <script src="{{url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
-  <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js" integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD" crossorigin="anonymous"></script>
+  <button id="restartButton" onclick="restartGame()">Restart Game</button>
+
+  
+  <!--<script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js" integrity="sha384-8Vi8VHwn3vjQ9eUHUxex3JSN/NFqUg3QbPyX8kWyb93+8AC/pPWTzj+nHtbC5bxD" crossorigin="anonymous"></script>-->
   <script>
 
     let hist_move = []
+
+    //FOR THE TEST SAKE
+    //'r2r4/ppP2pkp/5pb1/8/3p3N/8/P2P1P1P/RNB2RK1'
+    hist_move = [
+    "e2e3",
+    "e7e5",
+    "f1c4",
+    "b8c6",
+    "d1f3",
+    "g8f6",
+    "g2g4",
+    "f8c5",
+    "g4g5",
+    "e8g8",
+    "g5f6",
+    "d8f6",
+    "f3f6",
+    "g7f6",
+    "g1f3",
+    "g8g7",
+    "f3h4",
+    "d7d5",
+    "e3e4",
+    "d5c4",
+    "b2b3",
+    "f8d8",
+    "b3c4",
+    "c6d4",
+    "c2c3",
+    "c8e6",
+    "c3d4",
+    "c5d6",
+    "c4c5",
+    "e5d4",
+    "c5d6",
+    "e6d5",
+    "d6c7",
+    "d5e4",
+    "e1g1",
+    "e4g6"
+]
+
     castling_longw_valid = true
     castling_shortw_valid = true
     castling_longb_valid = true
     castling_shortb_valid = true
+    status_game_finish = false
+
+    pre_promote = ''
+    cur_promote = ''
+    last_state = ''
+    
+    write_move(hist_move)
+
+    function promotePawn(piece) {
+      let candidate_move = (pre_promote+cur_promote+piece).toLowerCase()
+      let pre_hist_move = hist_move.slice()
+      pre_hist_move.push(candidate_move)
+      let data = {'history': pre_hist_move}
+      console.log('cek data kirim', data)
+
+      // Get the current position of the board
+      var currentPosition = board.position()
+      console.log('cek cur', currentPosition)
+
+      // Remove the pawn from the current position
+      delete currentPosition[cur_promote];
+
+      // Add a rook to the same square
+      currentPosition[cur_promote] = 'w'+piece
+
+      // Set the updated position on the board
+      board.position(currentPosition)
+      $('#promotionModal').modal('hide')
+
+      $.ajax({
+        url: "get_move", // Replace with your API endpoint
+        method: "POST", // Use the appropriate HTTP method
+        contentType: "application/json", // Specify that you're sending JSON data
+        data: JSON.stringify(data), // Convert JSON data to a string
+        dataType: "json",
+        success: function(response) {
+          let legality = response['legal']
+          let move_bot = response['move']
+
+          if (!legality) {
+            console.log('yo, snapback to reality')
+            //board.move(target+'-'+source)
+            board.position(last_state);
+            return true
+          } else {
+            console.log('cek move bot', response, move_bot)
+
+            if (response['winner'] !== null) {
+              let div_winner = document.getElementById('winner')
+              div_winner.innerHTML = 'Winner: '+response['winner']
+              status_game_finish = true
+            }
+
+            if (move_bot.length == 5) {
+              if ((move_bot[4] == 'r') || (move_bot[4] == 'q') || (move_bot[4] == 'b') || (move_bot[4] == 'n')) {
+                // Move the pawn forward and promote to queen
+                var move = {
+                  from: move_bot.substring(0,2),  // Source square
+                  to: move_bot.substring(2,4),    // Target square
+                  promotion: move_bot[4],  // Promotion piece
+                }
+                board.move(move)
+                hist_move.push(move_bot)
+                write_move(hist_move)
+              }
+            } else {
+              hist_move.push(candidate_move)
+
+              board.move(move_bot.slice(0, 2)+'-'+move_bot.slice(2, 4))
+              hist_move.push(move_bot)
+
+              pos_w_castling_short = board.position()['g1']
+              pos_b_castling_short = board.position()['g8']
+              pos_w_castling_long = board.position()['c1']
+              pos_b_castling_long = board.position()['c8']
+              console.log('cek bot move pre', move_bot, pos_w_castling_short == 'wk', move_bot == 'e1g1')
+              if (pos_w_castling_short == 'wK' && (move_bot == 'e1g1')) {
+                //console.log('cek move')
+                board.move('h1-f1')
+              } else if (pos_w_castling_long == 'wK' && (move_bot == 'e1c1')) {
+                board.move('a1-d1')
+              } else if (pos_b_castling_short == 'bK' && (move_bot == 'e8g8')) {
+                board.move('h8-f8')
+              } else if (pos_b_castling_long == 'bK' && (move_bot == 'e8c8')) {
+                board.move('a8-d8')
+              }
+              write_move(hist_move)
+            }
+          }
+        }
+      })
+    }
+
+    function write_move(history_move) {
+      let parent_table = document.getElementById('histmove')
+      parent_table.innerHTML = ''
+
+      let tr = document.createElement('tr')
+      let td = document.createElement('td')
+      td.colSpan = 3
+      td.innerHTML = 'No'
+      tr.appendChild(td)
+      parent_table.appendChild(tr)
+      for (let iter_moves = 0; iter_moves < hist_move.length; iter_moves = iter_moves+2) {
+        tr = document.createElement('tr')
+        td = document.createElement('td')
+        td.innerHTML = iter_moves+1
+        tr.appendChild(td)
+
+        td = document.createElement('td')
+        td.innerHTML = history_move[iter_moves]
+        tr.appendChild(td)
+
+        if (iter_moves+1 < hist_move.length) {
+          td = document.createElement('td')
+          td.innerHTML = history_move[iter_moves+1]
+          tr.appendChild(td)
+
+        }
+        parent_table.appendChild(tr)
+      }
+    }
 
     function onDragStart (source, piece, position, orientation) {
       // Implement your logic here if needed
@@ -60,11 +294,19 @@
     }
 
     let onprocess = false
-    function onDrop (source, target) {
+    function onDrop (source, target, piece) {
       //return 'snapback'
+      console.log('cek source target', source, target)
       if (onprocess) {
         return 'snapback'
       }
+
+      if (status_game_finish) {
+        return 'snapback'
+      }
+
+      let previous_post = board.fen()
+      save_pos = board.fen()
 
       console.log('source target', source, target)
       let candidate_move = source+target
@@ -72,9 +314,47 @@
       pre_hist_move.push(candidate_move)
       let data = {'history': pre_hist_move}
 
+      let vertical_pos_white_before = source[1]
+      let vertical_pos_white_after = target[1]
+      
+      if ((vertical_pos_white_before == 7) && (vertical_pos_white_after == 8) && (piece == 'wP')) {
+        $('#promotionModal').modal('show')
+        let pq = document.getElementById('pq')
+        let pn = document.getElementById('pn')
+        let pb = document.getElementById('pb')
+        let pr = document.getElementById('pr')
+
+        pr.innerHTML = ''
+        pn.innerHTML = ''
+        pb.innerHTML = ''
+        pq.innerHTML = ''
+
+        let img_pq = document.createElement('img')
+        img_pq.src = 'static/img/chess/wQ.png'
+        pq.appendChild(img_pq)
+
+        let img_pn = document.createElement('img')
+        img_pn.src = 'static/img/chess/wN.png'
+        pn.appendChild(img_pn)
+
+        let img_pb = document.createElement('img')
+        img_pb.src = 'static/img/chess/wB.png'
+        pb.appendChild(img_pb)
+
+        let img_pr = document.createElement('img')
+        img_pr.src = 'static/img/chess/wR.png'
+        pr.appendChild(img_pr)
+
+        pre_promote = source
+        cur_promote = target
+
+        last_state = board.fen()
+
+        return //'snapback'
+      }
       //return 'snapback'
 
-      let previous_post = board.fen()
+      
       console.log('cek data', data)
       $.ajax({
         url: "get_move", // Replace with your API endpoint
@@ -86,6 +366,10 @@
           //console.log("Request successful:", response)
           let legality = response['legal']
           let move_bot = response['move']
+          let promotion = false
+
+          
+
           //console.log('cek legal', legality)
           //console.log('cek hist', hist_move)
           if (!legality) {
@@ -100,7 +384,7 @@
             pos_b_castling_short = board.position()['g8']
             pos_w_castling_long = board.position()['c1']
             pos_b_castling_long = board.position()['c8']
-            console.log('cek move pre', source+target, pos_w_castling_short == 'wk', source+target == 'e1g1')
+            //console.log('cek move pre', source+target, pos_w_castling_short == 'wk', source+target == 'e1g1')
             if (pos_w_castling_short == 'wK' && (source+target == 'e1g1')) {
               //console.log('cek move')
               board.move('h1-f1')
@@ -112,9 +396,53 @@
               board.move('a8-d8')
             }
 
+            console.log('cek winner', response['winner'])
+            if (response['winner'] !== null) {
+              let div_winner = document.getElementById('winner')
+              div_winner.innerHTML = 'Winner: '+response['winner']
+              status_game_finish = true
+            }
+            write_move(hist_move)
+
             //bot move
             board.move(move_bot.slice(0, 2)+'-'+move_bot.slice(2, 4))
-            hist_move.push(move_bot)
+            //hist_move.push(move_bot)
+
+            if (move_bot.length == 5) {
+              if ((move_bot[4] == 'r') || (move_bot[4] == 'q') || (move_bot[4] == 'b') || (move_bot[4] == 'n')) {
+                // Move the pawn forward and promote to queen
+                var move = {
+                  from: move_bot.substring(0,2),  // Source square
+                  to: move_bot.substring(2,4),    // Target square
+                  promotion: move_bot[4],  // Promotion piece
+                }
+                board.move(move)
+                hist_move.push(move_bot)
+                write_move(hist_move)
+              }
+            } else {
+              board.move(move_bot.slice(0, 2)+'-'+move_bot.slice(2, 4))
+              hist_move.push(move_bot)
+
+              pos_w_castling_short = board.position()['g1']
+              pos_b_castling_short = board.position()['g8']
+              pos_w_castling_long = board.position()['c1']
+              pos_b_castling_long = board.position()['c8']
+              console.log('cek bot move pre', move_bot, pos_w_castling_short == 'wk', move_bot == 'e1g1')
+              if (pos_w_castling_short == 'wK' && (move_bot == 'e1g1')) {
+                //console.log('cek move')
+                board.move('h1-f1')
+              } else if (pos_w_castling_long == 'wK' && (move_bot == 'e1c1')) {
+                board.move('a1-d1')
+              } else if (pos_b_castling_short == 'bK' && (move_bot == 'e8g8')) {
+                board.move('h8-f8')
+              } else if (pos_b_castling_long == 'bK' && (move_bot == 'e8c8')) {
+                board.move('a8-d8')
+              }
+              write_move(hist_move)
+            }
+
+
 
           }
           
@@ -149,12 +477,24 @@
       onDragStart: onDragStart,
       onSnapEnd: onSnapEnd,
       onDrop: onDrop,
+      promotion: 'q',
     }
     // --- Begin Example JS --------------------------------------------------------
     var board = Chessboard('myBoard', config)
+    board.position('r2r4/ppP2pkp/5pb1/8/3p3N/8/P2P1P1P/RNB2RK1') //FOR THE TEST SAKE
     console.log(board.position())
     console.log(board.fen())
     // --- End Example JS ----------------------------------------------------------
   </script>
+
+  <script>
+    function restartGame() {
+        // You need to implement a function to reset the chess board
+        // This could involve resetting the internal game state or reloading the page
+        // Here, let's assume you reload the page for simplicity
+        location.reload();
+    }
+  </script>
+
 </body>
 </html>

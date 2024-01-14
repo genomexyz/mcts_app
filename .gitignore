@@ -1,3 +1,4 @@
 CHESS_DATA.csv
 *.pgn
 *.pt
+gui/*pt
