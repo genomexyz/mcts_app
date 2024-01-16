@@ -150,7 +150,8 @@ def get_move():
         board.push(move_uci)
         status_game = check_game_status(board)
         if status_game is not None:
-            print('terpicu, harusnya selesai')
+            #print('terpicu, harusnya selesai')
+            res['legal'] = True
             res['winner'] = status_game
             res['move'] = ''
             return res

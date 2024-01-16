@@ -25,7 +25,7 @@ app = Flask(__name__)
 # Defining a route for the home page
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index_multiplayer.html')
 
 @app.route('/get_move', methods=['POST'])
 def get_move():
@@ -53,8 +53,11 @@ def get_move():
 
         status_game = check_game_status(board)
         if status_game is not None:
+            #print('terpicu, harusnya selesai')
+            res['legal'] = True
             res['winner'] = status_game
-            break
+            res['move'] = ''
+            return res
 
     res['legal'] = True
     return res
