@@ -111,7 +111,7 @@ knowledge_new = {}
 knowledge_map_new = {}
 
 # Instantiate the neural network
-checkpoint = torch.load("model_policy2d_new_epoch-61.pt", map_location=torch.device('cpu'))
+checkpoint = torch.load("model_policy2d_new_epoch-111.pt", map_location=torch.device('cpu'))
 model = ChessResNet().double()
 model.load_state_dict(checkpoint['model'])
 
@@ -157,7 +157,7 @@ def get_move():
             return res
             #break
         
-    print('cek game status', status_game, board.is_checkmate(), board.turn, chess.BLACK)
+    #print('cek game status', status_game, board.is_checkmate(), board.turn, chess.BLACK)
     #evaluate best move by bot
     legal_move = list(board.legal_moves)
     legal_move_bot = []

@@ -125,6 +125,8 @@
     pre_promote = ''
     cur_promote = ''
     last_state = ''
+
+    color_promoted = ''
     
     write_move(hist_move)
 
@@ -143,11 +145,13 @@
       delete currentPosition[cur_promote];
 
       // Add a rook to the same square
-      currentPosition[cur_promote] = 'w'+piece
+      currentPosition[cur_promote] = color_promoted+piece
 
       // Set the updated position on the board
       board.position(currentPosition)
       $('#promotionModal').modal('hide')
+      
+      color_promoted = ''
 
       $.ajax({
         url: "get_move", // Replace with your API endpoint
@@ -157,7 +161,6 @@
         dataType: "json",
         success: function(response) {
           let legality = response['legal']
-          let move_bot = response['move']
 
           if (!legality) {
             console.log('yo, snapback to reality')
@@ -165,8 +168,9 @@
             board.position(last_state);
             return true
           } else {
-            console.log('cek move bot', response, move_bot)
+            hist_move.push(candidate_move)
 
+            write_move(hist_move)
             if (response['winner'] !== null) {
               let div_winner = document.getElementById('winner')
               div_winner.innerHTML = 'Winner: '+response['winner']
@@ -175,41 +179,6 @@
               return
             }
 
-            if (move_bot.length == 5) {
-              if ((move_bot[4] == 'r') || (move_bot[4] == 'q') || (move_bot[4] == 'b') || (move_bot[4] == 'n')) {
-                // Move the pawn forward and promote to queen
-                var move = {
-                  from: move_bot.substring(0,2),  // Source square
-                  to: move_bot.substring(2,4),    // Target square
-                  promotion: move_bot[4],  // Promotion piece
-                }
-                board.move(move)
-                hist_move.push(move_bot)
-                write_move(hist_move)
-              }
-            } else {
-              hist_move.push(candidate_move)
-
-              board.move(move_bot.slice(0, 2)+'-'+move_bot.slice(2, 4))
-              hist_move.push(move_bot)
-
-              pos_w_castling_short = board.position()['g1']
-              pos_b_castling_short = board.position()['g8']
-              pos_w_castling_long = board.position()['c1']
-              pos_b_castling_long = board.position()['c8']
-              console.log('cek bot move pre', move_bot, pos_w_castling_short == 'wk', move_bot == 'e1g1')
-              if (pos_w_castling_short == 'wK' && (move_bot == 'e1g1')) {
-                //console.log('cek move')
-                board.move('h1-f1')
-              } else if (pos_w_castling_long == 'wK' && (move_bot == 'e1c1')) {
-                board.move('a1-d1')
-              } else if (pos_b_castling_short == 'bK' && (move_bot == 'e8g8')) {
-                board.move('h8-f8')
-              } else if (pos_b_castling_long == 'bK' && (move_bot == 'e8c8')) {
-                board.move('a8-d8')
-              }
-              write_move(hist_move)
-            }
           }
         }
       })
@@ -279,6 +248,7 @@
       let vertical_pos_white_after = target[1]
       
       if ((vertical_pos_white_before == 7) && (vertical_pos_white_after == 8) && (piece == 'wP')) {
+        color_promoted = 'w'
         $('#promotionModal').modal('show')
         let pq = document.getElementById('pq')
         let pn = document.getElementById('pn')
@@ -312,6 +282,41 @@
         last_state = board.fen()
 
         return //'snapback'
+      } else if ((vertical_pos_white_before == 2) && (vertical_pos_white_after == 1) && (piece == 'bP')) {
+        color_promoted = 'b'
+        $('#promotionModal').modal('show')
+        let pq = document.getElementById('pq')
+        let pn = document.getElementById('pn')
+        let pb = document.getElementById('pb')
+        let pr = document.getElementById('pr')
+
+        pr.innerHTML = ''
+        pn.innerHTML = ''
+        pb.innerHTML = ''
+        pq.innerHTML = ''
+
+        let img_pq = document.createElement('img')
+        img_pq.src = 'static/img/chess/bQ.png'
+        pq.appendChild(img_pq)
+
+        let img_pn = document.createElement('img')
+        img_pn.src = 'static/img/chess/bN.png'
+        pn.appendChild(img_pn)
+
+        let img_pb = document.createElement('img')
+        img_pb.src = 'static/img/chess/bB.png'
+        pb.appendChild(img_pb)
+
+        let img_pr = document.createElement('img')
+        img_pr.src = 'static/img/chess/bR.png'
+        pr.appendChild(img_pr)
+
+        pre_promote = source
+        cur_promote = target
+
+        last_state = board.fen()
+
+        return
       }
       //return 'snapback'
 
@@ -366,53 +371,7 @@
             }
             write_move(hist_move)
 
-            //bot move
-            board.move(move_bot.slice(0, 2)+'-'+move_bot.slice(2, 4))
-            //hist_move.push(move_bot)
-
-            if (move_bot.length == 5) {
-              if ((move_bot[4] == 'r') || (move_bot[4] == 'q') || (move_bot[4] == 'b') || (move_bot[4] == 'n')) {
-                // Move the pawn forward and promote to queen
-                var move = {
-                  from: move_bot.substring(0,2),  // Source square
-                  to: move_bot.substring(2,4),    // Target square
-                  promotion: move_bot[4],  // Promotion piece
-                }
-                board.move(move)
-                hist_move.push(move_bot)
-                write_move(hist_move)
-              }
-            } else {
-              board.move(move_bot.slice(0, 2)+'-'+move_bot.slice(2, 4))
-              hist_move.push(move_bot)
-
-              pos_w_castling_short = board.position()['g1']
-              pos_b_castling_short = board.position()['g8']
-              pos_w_castling_long = board.position()['c1']
-              pos_b_castling_long = board.position()['c8']
-              console.log('cek bot move pre', move_bot, pos_w_castling_short == 'wk', move_bot == 'e1g1')
-              if (pos_w_castling_short == 'wK' && (move_bot == 'e1g1')) {
-                //console.log('cek move')
-                board.move('h1-f1')
-              } else if (pos_w_castling_long == 'wK' && (move_bot == 'e1c1')) {
-                board.move('a1-d1')
-              } else if (pos_b_castling_short == 'bK' && (move_bot == 'e8g8')) {
-                board.move('h8-f8')
-              } else if (pos_b_castling_long == 'bK' && (move_bot == 'e8c8')) {
-                board.move('a8-d8')
-              }
-              write_move(hist_move)
-            }
-
-
-
           }
-          
-          /*else {
-            board.move(source+'-'+target)
-            hist_move.push(source+target)
-            return 'snapback'
-          }*/
 
           onprocess = false
 

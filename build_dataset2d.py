@@ -7,11 +7,6 @@ import io
 import pickle
 from copy import copy
 
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding
-import base64
-
 #setting
 #file_path = 'CHESS_DATA.csv'
 encryption_key = b'0123456789abcdef'  # Use a valid key size: 16 bytes (128 bits)

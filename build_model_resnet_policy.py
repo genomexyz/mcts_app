@@ -68,7 +68,6 @@ class ChessResNet(nn.Module):
         return x
 
 # Example usage:
-input_size = 128
 hidden_neurons = [128, 100, 64, 64, 64]  # Customize the number of neurons in each hidden layer
 output_size = 1  # Assuming a regression task, adjust for classification tasks
 
@@ -79,8 +78,8 @@ model = ChessResNet().double()
 criterion = nn.BCEWithLogitsLoss()
 print(model)
 
-all_input = np.load('feature_policy2d.npy')
-all_label = np.load('label_policy2d.npy')
+all_input = np.load('feature_policy2d_train.npy')
+all_label = np.load('label_policy2d_train.npy')
 
 print(np.shape(all_input), np.shape(all_label))
 #print(list(set(all_label)))

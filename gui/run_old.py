@@ -46,6 +46,7 @@ def get_move():
             legal_move_str.append(str(legal_move[iter_legal]))
         
         if single_hist not in legal_move_str:
+            print('cek non legal move', single_hist)
             return res
         
         move_uci = chess.Move.from_uci(single_hist)
